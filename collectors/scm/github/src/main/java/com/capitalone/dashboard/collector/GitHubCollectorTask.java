@@ -247,7 +247,9 @@ public class GitHubCollectorTask extends CollectorTask<Collector> {
                     repo.getErrors().add(error);
                 }
                 gitHubRepoRepository.save(repo);
-            }
+            } else {
+                LOG.info("Repo " + repo.getRepoUrl() + " has reached the error threshold of " + gitHubSettings.getErrorThreshold());
+            }    
             repoCount++;
         }
         log("Repo Count", start, repoCount);

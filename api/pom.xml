@@ -19,17 +19,12 @@
     </properties>
 
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
+    <repositories>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
-    </distributionManagement>
-
+    </repositories>
 
     <build>
         <resources>
