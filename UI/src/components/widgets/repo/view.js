@@ -303,7 +303,7 @@
                     }
                 }
                 
-                export if(pull.timestamp >= fourteenDays.getTime()) {
+                if(pull.timestamp >= fourteenDays.getTime()) {
                     lastfourteenDayPullCount++;
                     ctrl.pulls.push(pull);
                     if(lastfourteenDaysPullContributors.indexOf(pull.userId) == -1) {
