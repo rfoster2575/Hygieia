@@ -23,7 +23,6 @@
             {name: "Security"},
             {name: "OpenSource"},
             {name: "Tests"}
-
         ];
 
         ctrl.miniWidgetView = ctrl.minitabs[0].name;
@@ -72,7 +71,6 @@
                 codeAnalysisData.securityDetails(saRequest).then(processSaResponse),
                 testSuiteData.details(testRequest).then(processTestResponse),
                 testSuiteData.details(performanceRequest).then(processPerfResponse)
-
             ]);
         };
 
@@ -92,6 +90,8 @@
 
             ctrl.linesofCode = getMetric(caData.metrics, 'ncloc');
 
+            ctrl.securityRating = getMetric(caData.metrics, 'security_rating');
+
             ctrl.issues = [
                 getMetric(caData.metrics, 'blocker_violations', 'Blocker'),
                 getMetric(caData.metrics, 'critical_violations', 'Critical'),
@@ -103,6 +103,13 @@
                 getMetric(caData.metrics, 'test_failures', 'Failures'),
                 getMetric(caData.metrics, 'test_errors', 'Errors'),
                 getMetric(caData.metrics, 'tests', 'Tests')
+            ];
+            ctrl.securityIssues = [
+                getMetric(caData.metrics, 'blocker_vulnerabilities', 'Blocker'),
+                getMetric(caData.metrics, 'critical_vulnerabilities', 'Critical'),
+                getMetric(caData.metrics, 'major_vulnerabilities', 'Major'),
+                getMetric(caData.metrics, 'minor_vulnerabilities', 'Minor'),
+                getMetric(caData.metrics, 'info_vulnerabilities', 'Info')    
             ];
 
             ctrl.lineCoverage = getMetric(caData.metrics, 'line_coverage');
@@ -117,7 +124,8 @@
             var deferred = $q.defer();
             var saData = _.isEmpty(response.result) ? {} : response.result[0];
 
-            ctrl.securityIssues = getSecurityMetricsData(saData);
+            //ctrl.securityIssues is being populated in processCaResponse
+            //ctrl.securityIssues = getSecurityMetricsData(saData);
 
             deferred.resolve(response.lastUpdated);
             return deferred.promise;
@@ -338,6 +346,29 @@
 
                 default:
                     return 'ok';
+            }
+        }
+
+        ctrl.getSecurityRating = function getSecurityRating(rating) {
+            if (rating == undefined) return 'N/A';
+            switch (rating.value) {
+                case '1.0':
+                    return 'A';
+
+                case '2.0':
+                    return 'B';
+
+                case '3.0':
+                    return 'C';
+
+                case '4.0':
+                    return 'D';
+
+                case '5.0':
+                    return 'F';
+
+                default:
+                    return 'N/A';
             }
         }
 

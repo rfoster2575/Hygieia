@@ -4,6 +4,7 @@ public class SonarProject extends CollectorItem {
     protected static final String INSTANCE_URL = "instanceUrl";
     protected static final String PROJECT_NAME = "projectName";
     protected static final String PROJECT_ID = "projectId";
+    protected static final String PROJECT_KEY = "projectKey";
 
     public String getInstanceUrl() {
         return (String) getOptions().get(INSTANCE_URL);
@@ -19,6 +20,14 @@ public class SonarProject extends CollectorItem {
 
     public void setProjectId(String id) {
         getOptions().put(PROJECT_ID, id);
+    }
+
+    public String getProjectKey() {
+        return (String) getOptions().get(PROJECT_KEY);
+    }
+
+    public void setProjectKey(String key) {
+        getOptions().put(PROJECT_KEY, key);
     }
 
     public String getProjectName() {

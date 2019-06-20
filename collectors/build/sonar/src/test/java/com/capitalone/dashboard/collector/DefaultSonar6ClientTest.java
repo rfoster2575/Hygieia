@@ -43,6 +43,7 @@ public class DefaultSonar6ClientTest {
     private static final String URL_PROJECT_ANALYSES = "/api/project_analyses/search?project=%s";
     private static final String SONAR_URL = "http://sonar.com";
     private static final String METRICS = "ncloc,violations,new_vulnerabilities,critical_violations,major_violations,blocker_violations,tests,test_success_density,test_errors,test_failures,coverage,line_coverage,sqale_index,alert_status,quality_gate_details";
+    private static final String URL_VULNERABILITIES = "/api/issues/search?componentKeys=%s&types=VULNERABILITY&facetMode=count&facets=severities&resolved=false";
 
     @Before
     public void init() {
@@ -90,13 +91,16 @@ public class DefaultSonar6ClientTest {
     public void currentCodeQuality() throws Exception {
         String measureJson = getJson("sonar6measures.json");
         String analysesJson = getJson("sonar6analyses.json");
+        String vulnerabilityJson = getJson("sonar6vulnerability.json");
         SonarProject project = getProject();
         String measureUrl = String.format(SONAR_URL + URL_RESOURCE_DETAILS,project.getProjectId(),METRICS);
         String analysesUrl = String.format(SONAR_URL + URL_PROJECT_ANALYSES,project.getProjectName());
+        String vulnerabilityUrl = String.format(SONAR_URL + URL_VULNERABILITIES,project.getProjectKey());
         doReturn(new ResponseEntity<>(measureJson, HttpStatus.OK)).when(rest).exchange(eq(measureUrl), eq(HttpMethod.GET), Matchers.any(HttpEntity.class), eq(String.class));
         doReturn(new ResponseEntity<>(analysesJson, HttpStatus.OK)).when(rest).exchange(eq(analysesUrl), eq(HttpMethod.GET), Matchers.any(HttpEntity.class), eq(String.class));
+        doReturn(new ResponseEntity<>(vulnerabilityJson, HttpStatus.OK)).when(rest).exchange(eq(vulnerabilityUrl), eq(HttpMethod.GET), Matchers.any(HttpEntity.class), eq(String.class));
         CodeQuality quality = defaultSonar6Client.currentCodeQuality(getProject(),settings.getMetrics().get(0));
-        assertThat(quality.getMetrics().size(), is(15));
+        assertThat(quality.getMetrics().size(), is(20));
         assertThat(quality.getType(), is (CodeQualityType.StaticAnalysis));
         assertThat(quality.getName(), is ("com.capitalone.test:TestProject"));
         assertThat(quality.getVersion(), is ("2.0.0"));
@@ -107,31 +111,32 @@ public class DefaultSonar6ClientTest {
     public void currentCodeQualityForNullProjectData() throws Exception {
         String measureJson = getJson("sonar6measures.json");
         String analysesJson = getJson("sonar6analysesNull.json");
+        String vulnerabilityJson = getJson("sonar6vulnerability.json");
         SonarProject project = getProject();
         String measureUrl = String.format(SONAR_URL + URL_RESOURCE_DETAILS,project.getProjectId(),METRICS);
         String analysesUrl = String.format(SONAR_URL + URL_PROJECT_ANALYSES,project.getProjectName());
+        String vulnerabilityUrl = String.format(SONAR_URL + URL_VULNERABILITIES,project.getProjectKey());
         doReturn(new ResponseEntity<>(measureJson, HttpStatus.OK)).when(rest).exchange(eq(measureUrl), eq(HttpMethod.GET), Matchers.any(HttpEntity.class), eq(String.class));
         doReturn(new ResponseEntity<>(analysesJson, HttpStatus.OK)).when(rest).exchange(eq(analysesUrl), eq(HttpMethod.GET), Matchers.any(HttpEntity.class), eq(String.class));
+        doReturn(new ResponseEntity<>(vulnerabilityJson, HttpStatus.OK)).when(rest).exchange(eq(vulnerabilityUrl), eq(HttpMethod.GET), Matchers.any(HttpEntity.class), eq(String.class));
         CodeQuality quality = defaultSonar6Client.currentCodeQuality(getProject(),settings.getMetrics().get(0));
-        assertThat(quality.getMetrics().size(), is(15));
+        assertThat(quality.getMetrics().size(), is(20));
         assertThat(quality.getType(), is (CodeQualityType.StaticAnalysis));
         assertThat(quality.getName(), is ("com.capitalone.test:TestProject"));
 
     }
-
-
 
     private String getJson(String fileName) throws IOException {
         InputStream inputStream = DefaultSonar6ClientTest.class.getResourceAsStream(fileName);
         return IOUtils.toString(inputStream);
     }
 
-
     private SonarProject getProject() {
         SonarProject project = new SonarProject();
         project.setInstanceUrl(SONAR_URL);
         project.setProjectName("com.capitalone.test:TestProject");
         project.setProjectId("AVu3b-MAphY78UZXuYHp");
+        project.setProjectKey("testproject:master");
         return project;
     }
 }

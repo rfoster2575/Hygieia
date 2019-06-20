@@ -21,7 +21,7 @@ sonar.username=$SONAR_USERNAME
 sonar.password=$SONAR_PASSWORD
 
 #Sonar Metrics
-sonar.metrics[0]=${SONAR_METRICS:-ncloc,line_coverage,violations,critical_violations,major_violations,blocker_violations,sqale_index,test_success_density,test_failures,test_errors,tests}
+sonar.metrics[0]=${SONAR_METRICS:-ncloc,violations,blocker_violations,critical_violations,major_violations,tests,test_success_density,test_errors,test_failures,coverage,line_coverage,sqale_index,alert_status,quality_gate_details,security_rating}
 
 #Sonar Version - see above for semantics between version/metrics
 sonar.versions[0]=${SONAR_VERSION}

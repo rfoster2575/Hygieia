@@ -41,8 +41,7 @@ public class DefaultSonar6Client implements SonarClient {
     private static final String URL_QUALITY_PROFILES = "/api/qualityprofiles/search";
     private static final String URL_QUALITY_PROFILE_PROJECT_DETAILS = "/api/qualityprofiles/projects?key=";
     private static final String URL_QUALITY_PROFILE_CHANGES = "/api/qualityprofiles/changelog?profileKey=";
-
-
+    private static final String URL_VULNERABILITIES = "/api/issues/search?componentKeys=%s&types=VULNERABILITY&facetMode=count&facets=severities&resolved=false";
 
     private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
     private static final String ID = "id";
@@ -88,6 +87,7 @@ public class DefaultSonar6Client implements SonarClient {
                 project.setInstanceUrl(instanceUrl);
                 project.setProjectId(str(prjData, ID));
                 project.setProjectName(str(prjData, NAME));
+                project.setProjectKey(str(prjData, KEY));
                 projects.add(project);
             }
 
@@ -170,6 +170,23 @@ public class DefaultSonar6Client implements SonarClient {
                     codeQuality.getMetrics().add(metric);
                 }
 
+                String vulnerabilityUrl = String.format(
+                    project.getInstanceUrl() + URL_VULNERABILITIES, project.getProjectKey());
+
+                ResponseEntity<String> vulnerabilityResponse = rest.exchange(vulnerabilityUrl, HttpMethod.GET, this.httpHeaders, String.class);
+                JSONObject vulnerabilityObject = (JSONObject) jsonParser.parse(vulnerabilityResponse.getBody());
+                if (vulnerabilityObject != null) {
+                    for (Object facetObject : getJSONArray(vulnerabilityObject, "facets")) {
+                        for (Object resultObject : getJSONArray((JSONObject) facetObject, "values")) {
+                            JSONObject result = (JSONObject)resultObject;
+                            
+                            CodeQualityMetric metric = new CodeQualityMetric(strSafe(result, "val").toLowerCase() + "_vulnerabilities");
+                            metric.setValue(strSafe(result,"count"));
+                            metric.setFormattedValue(strSafe(result,"count"));
+                            codeQuality.getMetrics().add(metric);
+                        }
+                    }
+                }
                 return codeQuality;
             }
 
@@ -277,6 +294,11 @@ public class DefaultSonar6Client implements SonarClient {
         return 0;
     }
 
+    private JSONArray getJSONArray(JSONObject json, String key) {
+        Object obj = json.get(key);
+        return obj == null ? new JSONArray() : (JSONArray) obj;
+    }
+
     private String str(JSONObject json, String key) {
         Object obj = json.get(key);
         return obj == null ? null : obj.toString();
@@ -287,7 +309,6 @@ public class DefaultSonar6Client implements SonarClient {
         return obj == null ? "" : obj.toString();
     }
 
-    @SuppressWarnings("unused")
     private Integer integer(JSONObject json, String key) {
         Object obj = json.get(key);
         return obj == null ? null : Integer.valueOf(obj.toString());
@@ -305,7 +326,6 @@ public class DefaultSonar6Client implements SonarClient {
         return obj == null ? null : Boolean.valueOf(obj.toString());
     }
 
-    @SuppressWarnings("unused")
     private String format(String duration) {
         Long durationInMinutes = Long.valueOf(duration);
         if (durationInMinutes == 0) {
